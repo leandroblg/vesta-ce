@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>untrusted</title>
+  </head>
+  <body>
+    <p>A page that is not Vesta's, loaded over file:// in a second window (010 L4, L5, L3).</p>
+    <iframe id="frame" src="about:blank" title="frame"></iframe>
+    <button id="nav" type="button">navigate the frame</button>
+    <script>
+      document.getElementById("nav").addEventListener("click", () => {
+        document.getElementById("frame").contentWindow.location.href = "https://example.com/";
+      });
+      const bridge = window.vesta;
+      if (bridge === undefined) document.title = "NO_BRIDGE";
+      else bridge.app.getInitialState().then((r) => { document.title = r.ok ? "OK" : r.error.code; }, () => { document.title = "THREW"; });
+    </script>
+  </body>
+</html>

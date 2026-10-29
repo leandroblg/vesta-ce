@@ -1,0 +1,297 @@
+/*
+ * Design tokens (constitution V; HIG identity review, "B · Hearth" applied).
+ *
+ * Two independent settings pick a block: the palette (Settings → General → Theme, `<html data-palette>`; Hearth is
+ * the default and needs no attribute) and the appearance (Settings → General → Appearance: light, dark or the
+ * system's, which main maps onto nativeTheme, so the media query below is the effective mode). Every palette
+ * changes colors only: the layout, type and components are the same in all of them.
+ *
+ * Each block starts with a `palette:<name> mode:<light|dark>` marker; tests/unit/domain/theme-surfaces.test.ts reads
+ * `--surface`, `--bg`, `--surface-2`, `--stale-soft`, `--accent-soft` and `--fg` of every block and fails when
+ * src/domain/theme-surfaces.ts drifts from them. Text roles meet WCAG AA (4.5:1) on their surfaces in both modes.
+ *
+ * Roles: --bg window background (the stage) · --surface lists, inspector, dialogs · --surface-2 hover, fills,
+ * segmented tracks · --chrome the translucent toolbar · --fg / --muted / --faint primary, secondary and placeholder
+ * text · --fg-3 tertiary marks · --line / --line-strong hairlines · --accent selection, links, primary buttons,
+ * focus (--accent-fg is the text on it) · --flame the mark only · --stale "this needs you" (stale, destructive,
+ * errors), --stale-fg its text on --stale-soft, --stale-blink the blink's bright phase · --ok saved, success ·
+ * --hl the user's highlight · --search-hl the search match.
+ */
+:root {
+  --f-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, "Segoe UI", Roboto, Ubuntu, sans-serif;
+  --f-display: var(--f-body);
+  --f-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Ubuntu Mono", monospace;
+  /* The wordmark only: "Vesta" as the window identity and in About (identity §5). */
+  --f-brand: "Marcellus", "Times New Roman", serif;
+  --r-control: 6px;
+  --r-group: 10px;
+}
+
+/* ───────────── Hearth: travertine, marble, ash; caeruleum; ember; gold (identity §6) ───────────── */
+/* palette:hearth mode:light */
+:root,
+:root[data-palette="hearth"] {
+  color-scheme: light;
+  --bg: #f3efe7;
+  --surface: #fbfaf7;
+  --surface-2: #e9e4da;
+  --chrome: rgba(243, 239, 231, 0.78);
+  --fg: #1e1a16;
+  --muted: #6b6259;
+  --faint: #776e64;
+  --fg-3: rgba(30, 26, 22, 0.32);
+  --line: rgba(30, 26, 22, 0.11);
+  --line-strong: rgba(30, 26, 22, 0.2);
+  --accent: #2f5f8e;
+  --accent-fg: #ffffff;
+  --accent-soft: #e3e7ea;
+  --flame: #e4a13b;
+  --stale: #b9411c;
+  --pill-fg: #ffffff;
+  --stale-fg: #7a2a10;
+  --stale-soft: #f4e8e1;
+  --stale-blink: #e9c4b4;
+  --ok: #3b7a4d;
+  --ok-soft: #e3ede4;
+  --hl: rgba(228, 161, 59, 0.45);
+  --search-hl: #d6e3ef;
+  --search-hl-line: #2f5f8e;
+  --shadow: 0 10px 30px rgba(30, 26, 22, 0.18), 0 0 0 0.5px rgba(30, 26, 22, 0.14);
+}
+@media (prefers-color-scheme: dark) {
+  /* palette:hearth mode:dark */
+  :root,
+  :root[data-palette="hearth"] {
+    color-scheme: dark;
+    --bg: #1a1816;
+    --surface: #242120;
+    --surface-2: #302c28;
+    --chrome: rgba(26, 24, 22, 0.74);
+    --fg: #ede7de;
+    --muted: #a69d92;
+    --faint: #978e83;
+    --fg-3: rgba(237, 231, 222, 0.32);
+    --line: rgba(237, 231, 222, 0.1);
+    --line-strong: rgba(237, 231, 222, 0.2);
+    --accent: #8db7e2;
+    --accent-fg: #0c1722;
+    --accent-soft: #373c43;
+    --flame: #f0b04e;
+    --stale: #ff7b57;
+    --pill-fg: #1a1816;
+    --stale-fg: #ffb4a0;
+    --stale-soft: #432e28;
+    --stale-blink: #6a3f33;
+    --ok: #6fc48f;
+    --ok-soft: #27392d;
+    --hl: rgba(160, 125, 20, 0.55);
+    --search-hl: #2b4257;
+    --search-hl-line: #8db7e2;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.55), 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* ───────────── System: the platform's neutral greys and blue (review direction A · System) ───────────── */
+/* palette:system mode:light */
+:root[data-palette="system"] {
+  color-scheme: light;
+  --bg: #f1f1f1;
+  --surface: #ffffff;
+  --surface-2: #e8e8e8;
+  --chrome: rgba(248, 248, 248, 0.72);
+  --fg: #1d1d1f;
+  --muted: #636366;
+  --faint: #76767b;
+  --fg-3: rgba(0, 0, 0, 0.28);
+  --line: rgba(0, 0, 0, 0.09);
+  --line-strong: rgba(0, 0, 0, 0.16);
+  --accent: #0b6ad6;
+  --accent-fg: #ffffff;
+  --accent-soft: #dbecff;
+  --flame: #ff9500;
+  --stale: #d70015;
+  --pill-fg: #ffffff;
+  --stale-fg: #93000a;
+  --stale-soft: #ffebea;
+  --stale-blink: #ffc9c5;
+  --ok: #1f7a35;
+  --ok-soft: #e3f4e6;
+  --hl: rgba(255, 204, 0, 0.35);
+  --search-hl: #dbecff;
+  --search-hl-line: #0b6ad6;
+  --shadow: 0 8px 28px rgba(0, 0, 0, 0.22), 0 0 0 0.5px rgba(0, 0, 0, 0.18);
+}
+@media (prefers-color-scheme: dark) {
+  /* palette:system mode:dark */
+  :root[data-palette="system"] {
+    color-scheme: dark;
+    --bg: #2a2a2c;
+    --surface: #1e1e20;
+    --surface-2: #38383a;
+    --chrome: rgba(40, 40, 42, 0.62);
+    --fg: #e5e5ea;
+    --muted: #a1a1a6;
+    --faint: #98989d;
+    --fg-3: rgba(255, 255, 255, 0.28);
+    --line: rgba(255, 255, 255, 0.09);
+    --line-strong: rgba(255, 255, 255, 0.16);
+    --accent: #0a84ff;
+    --accent-fg: #061a2e;
+    --accent-soft: #193451;
+    --flame: #ff9f0a;
+    --stale: #ff453a;
+    --pill-fg: #1e1e20;
+    --stale-fg: #ffb3ad;
+    --stale-soft: #341c1c;
+    --stale-blink: #562a28;
+    --ok: #30d158;
+    --ok-soft: #1f3a28;
+    --hl: rgba(255, 214, 10, 0.3);
+    --search-hl: #193451;
+    --search-hl-line: #0a84ff;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.55), 0 0 0 0.5px rgba(255, 255, 255, 0.12);
+  }
+}
+
+/* ───────────── Ubuntu: Yaru's warm greys, Ubuntu orange and aubergine ───────────── */
+/* palette:ubuntu mode:light */
+:root[data-palette="ubuntu"] {
+  color-scheme: light;
+  --bg: #f6f5f4;
+  --surface: #ffffff;
+  --surface-2: #e9e6e3;
+  --chrome: rgba(246, 245, 244, 0.8);
+  --fg: #2c2c2c;
+  --muted: #666360;
+  --faint: #77736f;
+  --fg-3: rgba(44, 44, 44, 0.3);
+  --line: rgba(44, 44, 44, 0.11);
+  --line-strong: rgba(44, 44, 44, 0.2);
+  --accent: #c7431a;
+  --accent-fg: #ffffff;
+  --accent-soft: #fdebe4;
+  --flame: #e95420;
+  --stale: #772953;
+  --pill-fg: #ffffff;
+  --stale-fg: #5e2750;
+  --stale-soft: #f3e8ee;
+  --stale-blink: #e2c3d4;
+  --ok: #0e8420;
+  --ok-soft: #e2f1e4;
+  --hl: rgba(247, 197, 0, 0.4);
+  --search-hl: #fbe0d4;
+  --search-hl-line: #c7431a;
+  --shadow: 0 10px 30px rgba(44, 44, 44, 0.18), 0 0 0 0.5px rgba(44, 44, 44, 0.14);
+}
+@media (prefers-color-scheme: dark) {
+  /* palette:ubuntu mode:dark */
+  :root[data-palette="ubuntu"] {
+    color-scheme: dark;
+    --bg: #242424;
+    --surface: #2e2e2e;
+    --surface-2: #3b3b3b;
+    --chrome: rgba(36, 36, 36, 0.78);
+    --fg: #f2f2f2;
+    --muted: #b4b1ae;
+    --faint: #a39f9b;
+    --fg-3: rgba(242, 242, 242, 0.3);
+    --line: rgba(242, 242, 242, 0.1);
+    --line-strong: rgba(242, 242, 242, 0.2);
+    --accent: #f08d5f;
+    --accent-fg: #2a1208;
+    --accent-soft: #44322b;
+    --flame: #f08d5f;
+    --stale: #d98bb7;
+    --pill-fg: #242424;
+    --stale-fg: #f0c4dd;
+    --stale-soft: #3e2a36;
+    --stale-blink: #5a3a4d;
+    --ok: #5cc070;
+    --ok-soft: #243b2a;
+    --hl: rgba(247, 197, 0, 0.35);
+    --search-hl: #44322b;
+    --search-hl-line: #f08d5f;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.55), 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* ───────────── Minimalist: black, white and one grey; color only where it carries meaning ───────────── */
+/* palette:minimal mode:light */
+:root[data-palette="minimal"] {
+  color-scheme: light;
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f2f2f2;
+  --chrome: rgba(255, 255, 255, 0.82);
+  --fg: #111111;
+  --muted: #666666;
+  --faint: #717171;
+  --fg-3: rgba(0, 0, 0, 0.3);
+  --line: rgba(0, 0, 0, 0.1);
+  --line-strong: rgba(0, 0, 0, 0.18);
+  --accent: #111111;
+  --accent-fg: #ffffff;
+  --accent-soft: #ededed;
+  --flame: #111111;
+  --stale: #b3261e;
+  --pill-fg: #ffffff;
+  --stale-fg: #8c1d17;
+  --stale-soft: #fbedeb;
+  --stale-blink: #f3cfcb;
+  --ok: #2e7d32;
+  --ok-soft: #e8f3e8;
+  --hl: rgba(255, 230, 120, 0.55);
+  --search-hl: #e5e5e5;
+  --search-hl-line: #111111;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.14), 0 0 0 0.5px rgba(0, 0, 0, 0.12);
+}
+@media (prefers-color-scheme: dark) {
+  /* palette:minimal mode:dark */
+  :root[data-palette="minimal"] {
+    color-scheme: dark;
+    --bg: #121212;
+    --surface: #181818;
+    --surface-2: #262626;
+    --chrome: rgba(18, 18, 18, 0.8);
+    --fg: #ededed;
+    --muted: #a0a0a0;
+    --faint: #949494;
+    --fg-3: rgba(255, 255, 255, 0.3);
+    --line: rgba(255, 255, 255, 0.1);
+    --line-strong: rgba(255, 255, 255, 0.2);
+    --accent: #ededed;
+    --accent-fg: #121212;
+    --accent-soft: #2c2c2c;
+    --flame: #ededed;
+    --stale: #ff8a80;
+    --pill-fg: #121212;
+    --stale-fg: #ffb4ab;
+    --stale-soft: #3a1f1c;
+    --stale-blink: #5c2f2a;
+    --ok: #81c995;
+    --ok-soft: #1f3324;
+    --hl: rgba(180, 150, 30, 0.5);
+    --search-hl: #333333;
+    --search-hl-line: #ededed;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Increase Contrast (identity §6): secondary text becomes label, hairlines darken. */
+@media (prefers-contrast: more) {
+  :root {
+    --muted: var(--fg);
+    --faint: var(--fg);
+    --line: color-mix(in srgb, var(--fg) 40%, transparent);
+    --line-strong: color-mix(in srgb, var(--fg) 60%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

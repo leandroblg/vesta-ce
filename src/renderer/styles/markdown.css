@@ -1,0 +1,805 @@
+/* Markdown in the editors and in read-only rendering (feature 005). Read-only HTML is sanitized, so it carries
+   no classes: it is styled through the data attributes the renderer writes (research §5, §6). */
+
+/* ProseMirror's own required rules (prosemirror-view/style/prosemirror.css) */
+.ProseMirror {
+  position: relative;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  white-space: break-spaces;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0;
+  outline: none;
+}
+.ProseMirror pre {
+  white-space: pre-wrap;
+}
+.ProseMirror li {
+  position: relative;
+}
+.ProseMirror-hideselection *::selection {
+  background: transparent;
+}
+.ProseMirror-hideselection {
+  caret-color: transparent;
+}
+.ProseMirror [draggable][contenteditable="false"] {
+  user-select: text;
+}
+.ProseMirror-selectednode {
+  outline: 2px solid var(--accent);
+}
+img.ProseMirror-separator {
+  display: inline !important;
+  border: none !important;
+  margin: 0 !important;
+}
+
+/* Editor hosts */
+.md-host {
+  position: relative;
+}
+.md-host .ProseMirror p {
+  margin: 0;
+}
+.md-host .ProseMirror[data-placeholder]:has(> :only-child:empty)::before,
+.md-host .ProseMirror[data-placeholder]:has(> p:only-child > br.ProseMirror-trailingBreak:only-child)::before {
+  content: attr(data-placeholder);
+  position: absolute;
+  color: var(--faint);
+  font-style: italic;
+  pointer-events: none;
+}
+
+/* Inline formatting, shared */
+mark,
+.md-mark {
+  background: var(--hl);
+  color: inherit;
+  border-radius: 3px;
+  padding: 0 0.12em;
+}
+[data-vesta-span][data-underline] {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+[data-vesta-span][data-bg] {
+  border-radius: 3px;
+  padding: 0 0.12em;
+}
+code {
+  font-family: var(--f-mono);
+  font-size: 0.92em;
+  background: var(--surface-2);
+  border-radius: 4px;
+  padding: 0 0.25em;
+}
+
+/* Titles and reminders: images at the font height of the line (FR-017), headings as sizes (FR-015a) */
+.md-title img,
+.md-inline img {
+  height: 1em;
+  width: auto;
+  vertical-align: -0.12em;
+  display: inline;
+}
+.md-title h1,
+[data-heading="1"] {
+  font-size: 1.55em;
+}
+.md-title h2,
+[data-heading="2"] {
+  font-size: 1.3em;
+}
+.md-title h3,
+[data-heading="3"] {
+  font-size: 1.12em;
+}
+.md-title h1,
+.md-title h2,
+.md-title h3,
+.md-title h4,
+.md-title h5,
+.md-title h6,
+[data-heading] {
+  font-family: var(--f-display);
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0;
+}
+
+/* Details */
+.md-block {
+  font-size: 13px;
+  line-height: 18px;
+}
+.md-block > *:first-child {
+  margin-top: 0;
+}
+.md-block > *:last-child {
+  margin-bottom: 0;
+}
+.md-block p,
+.md-block ul,
+.md-block ol,
+.md-block blockquote,
+.md-block pre,
+.md-block table,
+.md-block details {
+  margin: 0 0 0.75em;
+}
+/* 012 FR-005a (PRD Q150): one line of normal details text between any two top-level blocks, editing and read-only,
+   as the markdown separates them with one blank line; spacing inside lists, quotes and tables is unchanged. */
+.md-block {
+  --md-gap: 18px;
+}
+.md-host.md-block .ProseMirror > *,
+.md-host.md-block.ro-details > * {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.md-host.md-block .ProseMirror > * + *,
+.md-host.md-block.ro-details > * + * {
+  margin-top: var(--md-gap);
+}
+.md-block img {
+  max-width: 100%;
+}
+.md-block blockquote {
+  border-left: 3px solid var(--line-strong);
+  padding-left: 0.8em;
+  color: var(--muted);
+  margin-left: 0;
+}
+.md-block pre {
+  background: var(--surface-2);
+  border-radius: 7px;
+  padding: 10px 12px;
+  font: 12.5px/1.55 var(--f-mono);
+  overflow-x: auto;
+}
+.md-block pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+.md-block table {
+  border-collapse: collapse;
+}
+.md-block th,
+.md-block td {
+  border: 1px solid var(--line-strong);
+  padding: 4px 8px;
+}
+[data-align="center"] {
+  text-align: center;
+}
+[data-align="right"] {
+  text-align: right;
+}
+[data-md-check] {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 1.6px solid var(--muted);
+  border-radius: 3px;
+  vertical-align: -0.15em;
+  margin-right: 0.4em;
+}
+[data-md-check][aria-checked="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+[data-md-placeholder] {
+  font-style: italic;
+  color: var(--muted);
+}
+
+/* Code highlighting: editor decorations (.token) and read-only tokens (data-tk) */
+.token.comment,
+[data-tk~="comment"] {
+  color: var(--muted);
+  font-style: italic;
+}
+.token.keyword,
+[data-tk~="keyword"] {
+  color: var(--accent);
+  font-weight: 600;
+}
+.token.string,
+[data-tk~="string"] {
+  color: var(--ok);
+}
+.token.number,
+[data-tk~="number"] {
+  color: var(--stale);
+}
+
+/* Unpackaged builds only: the layer the e2e test hooks mount editors and rows into */
+.test-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  overflow: auto;
+  background: var(--bg);
+  color: var(--fg);
+  padding: 16px;
+  font-family: var(--f-body);
+}
+.test-layer .ed-title {
+  font-size: 17px;
+  font-weight: 700;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 7px 10px;
+  margin-bottom: 8px;
+  background: var(--surface);
+}
+.test-layer .md-editor {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 14px;
+  min-height: 120px;
+  margin-bottom: 8px;
+  background: var(--surface);
+}
+.test-layer .test-row {
+  font-size: 15px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* Checklists in the details editor: a box drawn left of the item, toggled by a click on it (FR-018) */
+.md-block .ProseMirror li[data-item-type="task"] {
+  list-style: none;
+  position: relative;
+  margin-left: -1.3em;
+  padding-left: 1.5em;
+}
+.md-block .ProseMirror li[data-item-type="task"]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.28em;
+  width: 14px;
+  height: 14px;
+  border: 1.6px solid var(--muted);
+  border-radius: 3px;
+  cursor: pointer;
+  background: var(--surface);
+  box-sizing: border-box;
+}
+.md-block .ProseMirror li[data-item-type="task"][data-checked="true"]::before {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.md-block .ProseMirror li[data-item-type="task"][data-checked="true"]::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: calc(0.28em + 2px);
+  width: 4px;
+  height: 8px;
+  border: solid var(--accent-fg);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+.md-block .ProseMirror li > p {
+  margin: 0;
+}
+/* HTML that cannot render on its own (one tag of a <details> section) shows as its source */
+.md-block .ProseMirror span[data-type="html"][data-source] {
+  font: 12px var(--f-mono);
+  color: var(--muted);
+}
+
+/* The floating editing menu (005 US3), from the prototype */
+/* 013 FR-039, FR-040 (PRD Q166): two rows of buttons, the label at the left end spanning both, in a column as wide as
+   the widest label (--fm-label-w, measured), shorter labels centered, so no button moves when the label changes. */
+.fmenu {
+  position: fixed;
+  z-index: 55;
+  display: grid;
+  grid-template-columns: var(--fm-label-w, max-content) auto;
+  align-items: center;
+  column-gap: 4px;
+  row-gap: 2px;
+  max-width: min(720px, calc(100vw - 16px));
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 0;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: 4px;
+  color: var(--fg);
+  font-family: var(--f-body);
+  font-weight: 400;
+  font-size: 12px;
+}
+.fmenu[hidden],
+.fm-linkpanel[hidden],
+.fm-link-error[hidden] {
+  display: none;
+}
+.fm-scope {
+  grid-row: 1 / span 2;
+  grid-column: 1;
+  box-sizing: content-box;
+  font: 600 11px/1 var(--f-body);
+  color: var(--muted);
+  padding: 0 6px 0 4px;
+  white-space: nowrap;
+  text-align: center;
+}
+/* 018 FR-036 (PRD Q286): the table options' row adds nothing to the menu's width: the first two rows size it. */
+.fm-table-row {
+  width: 0;
+  min-width: 100%;
+}
+.fm-row[hidden] {
+  display: none;
+}
+.fm-row {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+/* 016 FR-013 (PRD Q233): the link panel takes the menu's place; the label and the rows step aside while it shows. */
+.fmenu.linking .fm-scope,
+.fmenu.linking .fm-row {
+  display: none;
+}
+.fm-linkpanel {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 320px;
+  max-width: calc(100vw - 32px);
+  padding: 6px 8px 8px;
+}
+.fm-b > svg {
+  width: 16px;
+  height: 16px;
+}
+.fm-b {
+  position: relative;
+  min-width: 24px;
+  height: 24px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0 5px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: none;
+  font-size: 13px;
+  color: var(--fg);
+  cursor: pointer;
+  overflow: hidden;
+}
+.fm-b:hover {
+  background: var(--surface-2);
+}
+.fm-b:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.fm-b[aria-pressed="true"] {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.fm-b[data-cmd="strong"] {
+  font-weight: 700;
+}
+.fm-b[data-cmd="emphasis"] {
+  font-style: italic;
+}
+.fm-b[data-cmd="underline"] {
+  text-decoration: underline;
+}
+.fm-b[data-cmd="strike_through"] {
+  text-decoration: line-through;
+}
+.fm-b[data-cmd="inlineCode"],
+.fm-b[data-cmd="codeblock"] {
+  font: 12px var(--f-mono);
+}
+.fm-color > span {
+  font-weight: 700;
+  line-height: 1.1;
+}
+/* 013 FR-041: Text color is an A over a swatch of the current color (inline style), Highlight an A drawn on the
+   current highlight color (inline style; the default highlight otherwise). */
+.fm-color.fm-color > span {
+  border-bottom: 3px solid var(--accent);
+}
+.fm-color.fm-hl > span {
+  border-bottom: 0;
+  background: var(--hl);
+  padding: 0 4px;
+  border-radius: 3px;
+}
+.fm-linkpanel label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.fm-linkpanel input {
+  height: 28px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  padding: 0 8px;
+  font: 13px var(--f-body);
+}
+.fm-linkpanel input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+}
+.fm-link-error {
+  margin: -2px 0 0;
+  font-size: 12px;
+  color: var(--stale-fg);
+}
+/* Tab order is Apply, Remove link, Cancel (the DOM); the eye reads Remove link at the left, Cancel and Apply at the
+   right, Apply the default (HIG prototypes, T002 choice 1). */
+.fm-link-actions {
+  display: flex;
+  gap: 6px;
+}
+.fm-link-actions button {
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--fg);
+  font: 12px var(--f-body);
+  cursor: default;
+}
+.fm-link-actions button[data-act="remove"] {
+  order: 0;
+  margin-right: auto;
+}
+.fm-link-actions button[data-act="cancel"] {
+  order: 1;
+}
+.fm-link-actions button[data-act="apply"] {
+  order: 2;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-fg);
+}
+.fm-link-actions button[aria-disabled="true"] {
+  opacity: 0.45;
+}
+
+/* FR-038: the plain markdown field shown when the live editor cannot load */
+.md-fallback {
+  display: block;
+  width: 100%;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--bg);
+  color: var(--fg);
+  padding: 8px 10px;
+  font: 13px/1.5 var(--f-mono);
+}
+.md-fallback-inline {
+  resize: none;
+  field-sizing: content;
+}
+.md-fallback-note {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+/* Menu glyphs are drawn by CSS, so each button's only text is its accessible name (WCAG 2.5.3). */
+.fm-b > span[data-glyph]::before {
+  content: attr(data-glyph);
+}
+/* 012 FR-013: the Quote glyph (U+275D) from a symbol font where the text font lacks it. */
+.fm-b[data-cmd="quote"] > span[data-glyph]::before {
+  font-family: var(--f-body, system-ui), "Apple Symbols", "Segoe UI Symbol", "DejaVu Sans", "Noto Sans Symbols", sans-serif;
+  font-size: 1.25em;
+}
+
+/* The color picker (011 US2, contracts/ui.md): one dialog for text and highlight color. */
+.cpick {
+  position: fixed;
+  z-index: 60;
+  display: grid;
+  gap: 6px;
+  min-width: calc(10 * 22px + 9 * 3px + 18px);
+  background: var(--surface);
+  border: 0;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: 8px;
+  color: var(--fg);
+  font: 400 12.5px/1.3 var(--f-body);
+}
+.cpick[hidden] {
+  display: none;
+}
+.cp-auto,
+.cp-custom {
+  justify-self: stretch;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  cursor: pointer;
+}
+.cp-auto:hover,
+.cp-custom:hover {
+  background: var(--surface-2);
+}
+.cp-grid {
+  display: grid;
+  gap: 3px;
+}
+.cp-gridrow,
+.cp-row {
+  display: grid;
+  grid-template-columns: repeat(10, 22px);
+  gap: 3px;
+}
+.cp-head {
+  font: 600 11px/1 var(--f-body);
+  color: var(--muted);
+  padding-top: 2px;
+}
+.cp-sw,
+.cp-slot {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+}
+.cp-sw {
+  display: grid;
+  place-items: stretch;
+  padding: 2px;
+  border: 1px solid var(--line);
+  background: none;
+  cursor: pointer;
+}
+.cp-slot {
+  border: 1px dashed var(--line);
+}
+.cp-chip {
+  border-radius: 3px;
+}
+.cp-sw:focus-visible,
+.cp-auto:focus-visible,
+.cp-custom:focus-visible,
+.cp-unpin:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+/* The current color: a check mark as well as the outline, never color alone (constitution V). */
+.cp-current,
+.cp-auto.cp-current {
+  border-color: var(--fg);
+  box-shadow: 0 0 0 1px var(--fg);
+}
+.cp-sw.cp-current::after {
+  content: "✓";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: 700 12px/1 var(--f-body);
+  color: var(--surface);
+  text-shadow: 0 0 2px var(--fg);
+}
+/* Adjusted for contrast in this theme (FR-009). */
+.cp-adjusted {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--fg);
+  border: 1px solid var(--surface);
+}
+.cp-unpin {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 15px;
+  height: 15px;
+  display: none;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--fg);
+  font: 700 11px/1 var(--f-body);
+  cursor: pointer;
+  padding: 0;
+}
+.cp-sw:hover > .cp-unpin,
+.cp-sw:focus-within > .cp-unpin {
+  display: grid;
+}
+.cp-empty {
+  margin: -2px 0 0;
+  color: var(--muted);
+}
+.cp-empty[hidden] {
+  display: none;
+}
+.cp-native {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cpick,
+  .cp-sw {
+    transition: none;
+  }
+}
+
+/* The table size grid (011 US3, contracts/ui.md). */
+.tsize {
+  position: fixed;
+  z-index: 60;
+  display: grid;
+  gap: 6px;
+  background: var(--surface);
+  border: 0;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: 8px;
+  color: var(--fg);
+  font: 400 12.5px/1.3 var(--f-body);
+  max-height: calc(100vh - 12px);
+  overflow: auto;
+}
+.tsize[hidden],
+.tsize-error[hidden] {
+  display: none;
+}
+.ts-grid {
+  display: grid;
+  gap: 2px;
+  justify-content: start;
+}
+.ts-grid:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.ts-row {
+  display: flex;
+  gap: 2px;
+}
+.ts-cell {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: var(--surface);
+}
+.ts-cell.on {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+.tsize-label {
+  margin: 0;
+  text-align: center;
+  font-weight: 700;
+}
+.ts-fields {
+  display: flex;
+  align-items: end;
+  gap: 6px;
+}
+.ts-field {
+  display: grid;
+  gap: 2px;
+  color: var(--muted);
+}
+.ts-field input {
+  width: 64px;
+  height: 26px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  padding: 0 6px;
+}
+.ts-field input[aria-invalid="true"] {
+  border-color: var(--stale);
+}
+.ts-insert {
+  height: 26px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--fg);
+  font: inherit;
+  cursor: pointer;
+}
+.tsize-error {
+  margin: 0;
+  color: var(--stale-fg);
+}
+
+/* Table row and column handles (011 FR-021): a mouse aid; the menu options are the keyboard path. */
+.tbl-handles[hidden],
+.tbl-menu[hidden] {
+  display: none;
+}
+.tbl-h-row,
+.tbl-h-col {
+  position: fixed;
+  z-index: 50;
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--muted);
+  font: 700 11px/1 var(--f-body);
+  cursor: pointer;
+}
+.tbl-h-row:hover,
+.tbl-h-col:hover {
+  color: var(--fg);
+  background: var(--surface-2);
+}
+.tbl-menu {
+  position: fixed;
+  z-index: 61;
+  display: grid;
+  min-width: 160px;
+  background: var(--surface);
+  border: 0;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: 4px;
+}
+.tbl-menu button {
+  text-align: start;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  color: var(--fg);
+  font: 400 12.5px/1.3 var(--f-body);
+  cursor: pointer;
+}
+.tbl-menu button:hover {
+  background: var(--surface-2);
+}
+.fm-b[hidden] {
+  display: none;
+}
+
+
+/* 016 FR-016c (PRD Q255): a saved link whose address is not safe keeps the link look, with no address behind it. */
+.md-unsafe-link {
+  color: LinkText;
+  text-decoration: underline;
+  cursor: pointer;
+}

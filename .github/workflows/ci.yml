@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+# 010 L8 (FR-028): the token can only read the repository.
+permissions:
+  contents: read
+
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # 010 L7 (FR-029): a known high or critical advisory in a shipped dependency is a red pipeline.
+      - run: npm audit --omit=dev --audit-level=high
+      - name: Make sure the Electron binary is installed
+        shell: bash
+        run: |
+          if [ ! -d node_modules/electron/dist ]; then node node_modules/electron/install.js; fi
+          test -d node_modules/electron/dist || { echo "Electron binary missing after install"; exit 1; }
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - name: End-to-end tests (Linux, virtual display)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npm run test:e2e
+      - name: End-to-end tests
+        if: runner.os != 'Linux'
+        run: npm run test:e2e

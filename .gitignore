@@ -1,0 +1,103 @@
+# ───────────────────────────── Dependencies ─────────────────────────────
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# ─────────────────────── Build output / Electron ────────────────────────
+dist/
+dist-electron/
+out/
+release/
+# Feature 017: generated during package:* runs (scripts/icons.mjs, scripts/third-party-notices.mjs)
+THIRD_PARTY_NOTICES.txt
+build/icon.icns
+build/icon.ico
+build/icons/
+build/Vesta.icon/
+build/icon.iconset/
+# Note: build/ is NOT ignored — electron-builder keeps icons/entitlements there.
+.webpack/
+.vite/
+.parcel-cache/
+.turbo/
+*.tsbuildinfo
+
+# Packaged apps & installers (electron-builder / electron-forge)
+*.app
+*.dmg
+*.pkg
+*.exe
+*.msi
+*.blockmap
+*.AppImage
+*.snap
+*.deb
+*.rpm
+latest*.yml
+
+# Native module builds
+build/Release/
+*.node
+
+# ─────────────────────────────── Testing ────────────────────────────────
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+playwright/.cache/
+
+# ────────────────────────────── Logs / cache ─────────────────────────────
+/logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.eslintcache
+.stylelintcache
+.cache/
+
+# ────────────────────────── Environment / secrets ────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.cer
+*.mobileprovision
+*.provisionprofile
+# Code signing / notarization credentials
+electron-builder.env
+apple-notarize*.json
+
+# ─────────────────────────────── Editors / OS ───────────────────────────
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ─────────────────────────────── Claude Code ─────────────────────────────
+# Shared: .claude/skills/ (Spec Kit), .claude/settings.json, CLAUDE.md
+# Personal / machine-local:
+.claude/settings.local.json
+.claude/*.local.*
+.claude/skills
+CLAUDE.local.md
+
+# ──────────────────────────────── Spec Kit ──────────────────────────────
+# Machine-local state is ignored via .specify/.gitignore.
+.specify
+specs

@@ -1,0 +1,114 @@
+# 017 beta packaging (feature 017 research §1–§3): built locally by `npm run package:beta`.
+# macOS is ad-hoc signed and stays on the building Mac; Linux and Windows are unsigned; nothing is published.
+appId: app.vesta.desktop
+productName: Vesta
+directories:
+  output: release
+  buildResources: build
+asar: true
+asarUnpack:
+  - "**/*.node"
+# better-sqlite3 13 is N-API and ships a prebuilt module for every system: nothing to rebuild (research §2).
+npmRebuild: false
+publish: null
+toolsets:
+  # The static AppImage runtime: no FUSE 2 library, no --no-sandbox in the desktop entry (PRD Q266).
+  appimage: "1.0.3"
+  # NSIS 3.12, whose macOS makensis runs on Apple Silicon; the legacy default is Intel-only and needs Rosetta.
+  nsis: "1.2.1"
+files:
+  - out/**/*
+  - LICENSE
+  - TRADEMARKS.md
+  - package.json
+  - "!node_modules/better-sqlite3/src/**"
+  - "!node_modules/better-sqlite3/deps/**"
+  - "!node_modules/better-sqlite3/build/**"
+  - "!node_modules/better-sqlite3/binding.gyp"
+  - "!node_modules/better-sqlite3/prebuilds/linuxmusl-x64.node"
+  - "!node_modules/better-sqlite3/prebuilds/linuxmusl-arm64.node"
+extraResources:
+  # The Linux window icon (FR-011a); the system does not take it from the AppImage or the .tar.gz.
+  - from: build/icons/512x512.png
+    to: icon.png
+mac:
+  # electron-builder keeps these beside the program on Linux and Windows only; the notices name them (FR-013).
+  extraResources:
+    - from: node_modules/electron/dist/LICENSES.chromium.html
+      to: LICENSES.chromium.html
+    - from: node_modules/electron/dist/LICENSE
+      to: LICENSE.electron.txt
+  target:
+    - target: zip
+      arch: [arm64]
+  identity: "-"
+  hardenedRuntime: false
+  notarize: false
+  category: public.app-category.productivity
+  # The four appearances (research §3); package-beta falls back to build/icon.icns if actool rejects the bundle.
+  icon: build/Vesta.icon
+  artifactName: Vesta-${version}-mac-arm64.${ext}
+  # A platform list replaces the top-level one, and a list of exclusions only means "everything": each platform
+  # names what ships, so the app archive holds the compiled app alone, never the sources or local files.
+  files:
+    - out/**/*
+    - LICENSE
+    - TRADEMARKS.md
+    - package.json
+    - "!node_modules/better-sqlite3/prebuilds/darwin-x64.node"
+    - "!node_modules/better-sqlite3/prebuilds/linux-x64.node"
+    - "!node_modules/better-sqlite3/prebuilds/linux-arm64.node"
+    - "!node_modules/better-sqlite3/prebuilds/linuxmusl-x64.node"
+    - "!node_modules/better-sqlite3/prebuilds/linuxmusl-arm64.node"
+    - "!node_modules/better-sqlite3/prebuilds/win32-x64.node"
+    - "!node_modules/better-sqlite3/prebuilds/win32-arm64.node"
+linux:
+  target:
+    - target: AppImage
+      arch: [x64]
+    - target: tar.gz
+      arch: [x64]
+  category: Office
+  executableName: vesta
+  executableArgs: []
+  icon: build/icons
+  artifactName: Vesta-${version}-linux-x86_64.${ext}
+  # A platform list replaces the top-level one, and a list of exclusions only means "everything": each platform
+  # names what ships, so the app archive holds the compiled app alone, never the sources or local files.
+  files:
+    - out/**/*
+    - LICENSE
+    - TRADEMARKS.md
+    - package.json
+    - "!node_modules/better-sqlite3/prebuilds/darwin-arm64.node"
+    - "!node_modules/better-sqlite3/prebuilds/darwin-x64.node"
+    - "!node_modules/better-sqlite3/prebuilds/linux-arm64.node"
+    - "!node_modules/better-sqlite3/prebuilds/linuxmusl-x64.node"
+    - "!node_modules/better-sqlite3/prebuilds/linuxmusl-arm64.node"
+    - "!node_modules/better-sqlite3/prebuilds/win32-x64.node"
+    - "!node_modules/better-sqlite3/prebuilds/win32-arm64.node"
+win:
+  target:
+    - target: portable
+      arch: [x64]
+    - target: zip
+      arch: [x64]
+  signExecutable: false
+  icon: build/icon.ico
+  artifactName: Vesta-${version}-win-x64.${ext}
+  # A platform list replaces the top-level one, and a list of exclusions only means "everything": each platform
+  # names what ships, so the app archive holds the compiled app alone, never the sources or local files.
+  files:
+    - out/**/*
+    - LICENSE
+    - TRADEMARKS.md
+    - package.json
+    - "!node_modules/better-sqlite3/prebuilds/darwin-arm64.node"
+    - "!node_modules/better-sqlite3/prebuilds/darwin-x64.node"
+    - "!node_modules/better-sqlite3/prebuilds/linux-x64.node"
+    - "!node_modules/better-sqlite3/prebuilds/linux-arm64.node"
+    - "!node_modules/better-sqlite3/prebuilds/linuxmusl-x64.node"
+    - "!node_modules/better-sqlite3/prebuilds/linuxmusl-arm64.node"
+    - "!node_modules/better-sqlite3/prebuilds/win32-arm64.node"
+portable:
+  artifactName: Vesta-${version}-win-x64-portable.${ext}

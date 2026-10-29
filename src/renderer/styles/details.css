@@ -1,0 +1,308 @@
+/* The details panel as a trailing inspector (005 FR-002, FR-005, FR-006; HIG identity review, B · Hearth). */
+.panel {
+  flex: none;
+  width: var(--panel-w, 420px);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-left: 0.5px solid var(--line-strong);
+  position: relative;
+  min-width: 0;
+}
+.panel-resize {
+  position: absolute;
+  left: -4px;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: col-resize;
+  z-index: 2;
+}
+.panel-resize:hover,
+.panel-resize:focus-visible {
+  outline: none;
+  background: linear-gradient(to right, transparent 3px, var(--accent) 3px, var(--accent) 5px, transparent 5px);
+}
+/* The header: the item's kind, the save state and the close button (Sheets and panels: a titled pane). */
+.panel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 8px 0 16px;
+  border-bottom: 0.5px solid var(--line);
+}
+.panel-kind {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font: 600 13px/16px var(--f-display);
+  color: var(--fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.saved {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.saved svg {
+  width: 11px;
+  height: 11px;
+  stroke-width: 2.4;
+}
+.saved.ok {
+  color: var(--ok);
+}
+.saved.fail {
+  color: var(--stale);
+}
+.iconbtn {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  border-radius: 6px;
+  color: var(--muted);
+  padding: 0;
+}
+.iconbtn:hover {
+  background: var(--surface-2);
+  color: var(--fg);
+}
+.iconbtn svg {
+  width: 16px;
+  height: 16px;
+}
+.panel-body {
+  flex: 1;
+  overflow: auto;
+  padding: 14px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.field-label {
+  display: block;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+/* The title at Title 3 size and the details in a text view, on the window background (Text views). */
+.panel .ed-title,
+.ro-title {
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-control);
+  padding: 5px 8px;
+  background: var(--bg);
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  cursor: text;
+}
+.ro-title {
+  cursor: default;
+}
+.panel .md-editor,
+.ro-details {
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  padding: 8px 10px;
+  min-height: 150px;
+  cursor: text;
+  background: var(--bg);
+}
+.ro-details {
+  cursor: default;
+}
+.panel .md-editor .ProseMirror {
+  min-height: 128px;
+}
+.panel .ed-title:focus-within,
+.panel .md-editor:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.panel .help {
+  color: var(--muted);
+  font-size: 11px;
+  margin: 4px 0 0;
+}
+/* The alert period as a group box (Boxes) with the checkbox and the three fields. */
+.ov-set {
+  border: 0.5px solid var(--line-strong);
+  border-radius: var(--r-group);
+  padding: 10px 12px 12px;
+  margin: 0;
+  min-width: 0;
+  background: var(--bg);
+}
+.ov-set > legend {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 0 4px;
+  margin-left: -4px;
+}
+.meta-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 12px;
+  font-size: 12px;
+  margin: 0;
+  align-items: center;
+}
+.meta-grid dt {
+  color: var(--muted);
+}
+.meta-grid dd {
+  margin: 0;
+  min-width: 0;
+}
+/* 015 FR-016, 016 FR-009, FR-010 (PRD Q226, Q250): the history, newest first, drawn as a timeline: one hairline down
+   its left side, a dot per entry on it (ember for stale and "Was stale", gold for a reschedule, grey otherwise), the
+   event's words beside the dot and its date and time dimmed under them. Every color keeps 3:1 on the surface in every
+   theme (timeline-contrast.test.ts); the words always name the kind. */
+.panel-history h3 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.panel-history .timeline {
+  --tl-line: var(--muted);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 12px;
+  line-height: 16px;
+}
+.timeline li {
+  --tl-dot: var(--muted);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 0 0 10px 20px;
+}
+.timeline li:last-child {
+  padding-bottom: 0;
+}
+/* The hairline: each entry draws its part, from its dot to the next one. */
+.timeline li::before {
+  content: "";
+  position: absolute;
+  left: 4.5px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--tl-line);
+}
+.timeline li:first-child::before {
+  top: 8px;
+}
+.timeline li:last-child::before {
+  bottom: auto;
+  height: 8px;
+}
+.timeline li:only-child::before {
+  display: none;
+}
+.timeline .dot {
+  position: absolute;
+  left: 0;
+  top: 3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--tl-dot);
+  box-shadow: 0 0 0 2px var(--surface);
+}
+.timeline li[data-kind="stale"],
+.timeline li[data-kind="wasStale"] {
+  --tl-dot: var(--stale);
+}
+.timeline li[data-kind="rescheduled"] {
+  --tl-dot: color-mix(in srgb, var(--flame) 70%, var(--fg));
+}
+.timeline time {
+  color: var(--muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.pill.stale {
+  background: var(--stale);
+  color: var(--pill-fg, #ffffff);
+}
+.pill.ok {
+  background: var(--ok-soft);
+  /* 012 (research §15): a share of the theme's text color keeps the hue and reaches WCAG AA in both themes. */
+  color: color-mix(in srgb, var(--ok) 80%, var(--fg));
+}
+.meta-grid .pill {
+  height: auto;
+  min-height: 18px;
+  padding: 1px 8px;
+  font-size: 11px;
+  white-space: normal;
+}
+/* Narrow windows: the panel overlays the list from the right edge, up to 440 px wide, with no handle (FR-002). */
+@media (max-width: 759.98px) {
+  .panel {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: min(100%, 440px);
+    max-width: 100%;
+    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.12);
+    z-index: 20;
+  }
+  .panel-resize {
+    display: none;
+  }
+}
+
+/* A refused or missing file (005 FR-028, FR-029, FR-033): a banner at the bottom, like the notification. */
+.asset-notice {
+  position: fixed;
+  left: 50%;
+  bottom: 64px;
+  transform: translateX(-50%);
+  z-index: 60;
+  max-width: min(560px, calc(100vw - 32px));
+  background: var(--surface);
+  color: var(--fg);
+  border: 0.5px solid var(--line-strong);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 12px;
+  box-shadow: var(--shadow);
+}
+/* YouTube embeds (FR-034) */
+.md-yt-frame {
+  display: block;
+  width: 100%;
+  max-width: 560px;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+.md-yt-embed {
+  margin: 0 0 0.75em;
+}
+[data-yt-offline] {
+  display: inline-block;
+  padding: 8px 12px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}

@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "types": ["node"],
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  },
+  "include": [
+    "tests/**/*",
+    "src/**/*",
+    "scripts/**/*",
+    "vitest.config.ts",
+    "playwright.config.ts",
+    "vitest.package.config.ts"
+  ]
+}
