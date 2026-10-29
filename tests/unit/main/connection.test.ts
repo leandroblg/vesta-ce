@@ -1,8 +1,8 @@
 import { randomBytes } from "node:crypto";
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import type Database from "better-sqlite3";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import Database from "better-sqlite3";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { afterMigrate, openDatabase } from "../../../src/main/db/connection";
 import { migrate } from "../../../src/main/db/migrate";
 import { purgeExpired } from "../../../src/main/db/purge";
@@ -78,5 +78,28 @@ describe("L9/L15 the database connection (010 FR-023, FR-024, research §5, §6)
     const t0 = performance.now();
     purgeExpired(d, 2_000);
     expect(performance.now() - t0).toBeLessThan(200);
+  });
+});
+
+describe("openDatabase on a file that is not a database", () => {
+  let dir: string;
+  let cleanup: () => void;
+  beforeEach(() => {
+    ({ dir, cleanup } = tempDir());
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
+    cleanup();
+  });
+
+  it("closes the connection it opened before throwing, so Windows can move the file aside", () => {
+    const path = join(dir, "data.sqlite");
+    writeFileSync(path, Buffer.alloc(4096, 7));
+    const close = vi.spyOn(Database.prototype, "close");
+    expect(() => openDatabase(path)).toThrow();
+    expect(close).toHaveBeenCalledTimes(1);
+    expect(() => {
+      renameSync(path, join(dir, "moved.sqlite"));
+    }).not.toThrow();
   });
 });

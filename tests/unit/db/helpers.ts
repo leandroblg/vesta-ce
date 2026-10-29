@@ -9,7 +9,8 @@ export function tempDir(): { dir: string; cleanup: () => void } {
   return {
     dir,
     cleanup: () => {
-      rmSync(dir, { recursive: true, force: true });
+      // Retries ride out a short lock on Windows (an antivirus scan); a handle left open still fails.
+      rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     },
   };
 }

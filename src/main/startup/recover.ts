@@ -8,7 +8,7 @@ import Database from "better-sqlite3";
 import { planStartup, type StartupFacts } from "../../domain/startup";
 import type { StartupResult } from "../../domain/startup-outcome";
 import { backupFile, readLatestJson, writeBackup } from "../backup/backup";
-import { fileIntegrityOk, integrityOk, openDatabase } from "../db/connection";
+import { integrityOk, openDatabase } from "../db/connection";
 import { MIGRATIONS, currentVersion, migrate, type Migration } from "../db/migrate";
 import { errorMessage, type Logger } from "../log";
 import { recordLocks } from "../assets/locks";
@@ -42,27 +42,37 @@ export function isOwnStructure(name: string): boolean {
   );
 }
 
-function tryOpen(path: string): { db: Database.Database | null; ok: boolean; version: number } {
+/**
+ * Checks a file read-only. A read-write connection to a damaged file deletes its -wal and -shm when it closes, and
+ * those belong with the damaged copy (FR-042a); on Windows it may also keep the file locked.
+ */
+function probe(path: string): { ok: boolean; version: number } {
+  let db: Database.Database | null = null;
   try {
-    const db = openDatabase(path);
-    const ok = integrityOk(db);
-    let version = 0;
-    try {
-      version = currentVersion(db);
-    } catch {
-      return { db, ok: false, version: 0 };
-    }
-    return { db, ok, version };
+    db = new Database(path, { readonly: true, fileMustExist: true });
+    if (!integrityOk(db)) return { ok: false, version: 0 };
+    return { ok: true, version: currentVersion(db) };
+  } catch {
+    return { ok: false, version: 0 };
+  } finally {
+    db?.close();
+  }
+}
+
+/** Opens the file read-write only once it is known to be healthy. */
+function tryOpen(path: string): { db: Database.Database | null; ok: boolean; version: number } {
+  const { ok, version } = probe(path);
+  if (!ok) return { db: null, ok: false, version: 0 };
+  try {
+    return { db: openDatabase(path), ok: true, version };
   } catch {
     return { db: null, ok: false, version: 0 };
   }
 }
 
 function versionOf(path: string): number | null {
-  if (!fileIntegrityOk(path)) return null;
-  const { db, version } = tryOpen(path);
-  db?.close();
-  return version;
+  const { ok, version } = probe(path);
+  return ok ? version : null;
 }
 
 /**

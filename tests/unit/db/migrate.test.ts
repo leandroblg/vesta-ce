@@ -465,6 +465,8 @@ describe("migrations", () => {
     migrate(other);
     expect((other.prepare("select value from settings where key = ?").get("updateReminderDays") as { value: string }).value).toBe("90");
     expect(currentVersion(other)).toBe(LATEST_VERSION);
+    other.close();
+    db.close();
   });
 
   it("FR-016 migration 009 inserts the editor defaults and keeps existing values", () => {
@@ -483,6 +485,8 @@ describe("migrations", () => {
     migrate(other);
     expect((other.prepare("select value from settings where key = ?").get("tableRowsFirst") as { value: string }).value).toBe("true");
     expect(currentVersion(other)).toBe(LATEST_VERSION);
+    other.close();
+    db.close();
   });
   describe("migration 11 (015 data-model.md, research §4)", () => {
     const upTo10 = () => MIGRATIONS.filter((m) => m.version <= 10);

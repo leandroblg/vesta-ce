@@ -5,25 +5,36 @@ import { registerSearchFunctions } from "./search-functions";
 /** Opens the database with the PRD B2 / research.md §3 settings. */
 export function openDatabase(path: string, options: { readonly?: boolean } = {}): Database.Database {
   const db = new Database(path, { readonly: options.readonly ?? false, fileMustExist: options.readonly ?? false });
-  // 010 FR-023 (L9): owner-only before the WAL exists, so SQLite gives -wal and -shm the same mode.
-  if (path !== ":memory:" && process.platform !== "win32") {
-    try {
-      chmodSync(path, 0o600);
-    } catch {
-      // a file system without modes: the start-up folder check logs it once
+  try {
+    // 010 FR-023 (L9): owner-only before the WAL exists, so SQLite gives -wal and -shm the same mode.
+    if (path !== ":memory:" && process.platform !== "win32") {
+      try {
+        chmodSync(path, 0o600);
+      } catch {
+        // a file system without modes: the start-up folder check logs it once
+      }
     }
+    if (!options.readonly) {
+      db.pragma("journal_mode = WAL");
+      db.pragma("synchronous = FULL");
+      // 010 FR-024 (L15): deleted and overwritten content is zeroed, never left in free pages.
+      db.pragma("secure_delete = ON");
+    }
+    db.pragma("foreign_keys = ON");
+    db.pragma("busy_timeout = 2000");
+    // The search triggers call these (006 research §4).
+    registerSearchFunctions(db);
+    if (!options.readonly) applySearchSecureDelete(db);
+  } catch (err) {
+    // A file that is not a database opens, then fails here: closed, or Windows keeps it locked and the
+    // recovery can neither move nor delete it.
+    try {
+      db.close();
+    } catch {
+      // the original error is the one worth reporting
+    }
+    throw err;
   }
-  if (!options.readonly) {
-    db.pragma("journal_mode = WAL");
-    db.pragma("synchronous = FULL");
-    // 010 FR-024 (L15): deleted and overwritten content is zeroed, never left in free pages.
-    db.pragma("secure_delete = ON");
-  }
-  db.pragma("foreign_keys = ON");
-  db.pragma("busy_timeout = 2000");
-  // The search triggers call these (006 research §4).
-  registerSearchFunctions(db);
-  if (!options.readonly) applySearchSecureDelete(db);
   return db;
 }
 
