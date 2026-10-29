@@ -7,6 +7,7 @@ import { buildMenuHandlers } from "../../../src/main/ipc/menu-handlers";
 import { MenuController } from "../../../src/main/menu-controller";
 import type { MenuOptions } from "../../../src/main/menu";
 import { createI18n } from "../../../src/shared/i18n";
+import { budget } from "../perf-budget";
 
 function fakeMenu(ids: readonly { id: string; type: string }[] = ["done", "newTask", "view:trash"].map((id) => ({ id, type: id.startsWith("view:") ? "radio" : "normal" }))) {
   const items = new Map<string, { enabled: boolean; checked: boolean; type: string }>();
@@ -68,7 +69,7 @@ describe("013 research §3 the menu controller", () => {
     const { c } = controller(fakeMenu(MENU_COMMANDS.map((m) => ({ id: m.id, type: m.type }))));
     const start = performance.now();
     for (let i = 0; i < 100; i++) c.setState({ ...initialCommandState(), busy: i % 2 === 0 });
-    expect((performance.now() - start) / 100).toBeLessThan(2);
+    expect((performance.now() - start) / 100).toBeLessThan(budget(2));
   });
 });
 

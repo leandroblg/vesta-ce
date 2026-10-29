@@ -16,6 +16,7 @@
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.node.json --noEmit && tsc -p tsconfig.web.json --noEmit && tsc -p tsconfig.test.json --noEmit",
     "test": "vitest run",
+    "test:perf": "vitest run -c vitest.perf.config.ts",
     "test:e2e": "electron-vite build && playwright test",
     "build": "electron-vite build",
     "package:beta": "node scripts/package-beta.ts --all",

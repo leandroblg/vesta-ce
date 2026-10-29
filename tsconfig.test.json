@@ -13,6 +13,7 @@
     "scripts/**/*",
     "vitest.config.ts",
     "playwright.config.ts",
-    "vitest.package.config.ts"
+    "vitest.package.config.ts",
+    "vitest.perf.config.ts"
   ]
 }

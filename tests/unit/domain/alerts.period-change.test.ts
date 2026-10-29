@@ -5,6 +5,7 @@ import { DEFAULT_ALERT_SETTINGS, type AlertSettings } from "../../../src/domain/
 import { evaluateAlerts, unstaleIfAhead } from "../../../src/domain/alerts";
 import { applyPeriodChange } from "../../../src/domain/period-change";
 import type { Task } from "../../../src/domain/task";
+import { budget } from "../perf-budget";
 import { mk } from "./fixtures";
 
 const MIN = 60_000;
@@ -175,6 +176,6 @@ describe("012 plan Performance Goals", () => {
     for (let i = 0; i < n; i++) applyPeriodChange(rows, settings(7 * 1440), now);
     const ms = (performance.now() - t0) / n;
     console.info(`[012 T072] applyPeriodChange over 1,000 tasks: ${ms.toFixed(2)} ms`);
-    expect(ms).toBeLessThan(20);
+    expect(ms).toBeLessThan(budget(20));
   });
 });

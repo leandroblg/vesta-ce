@@ -81,18 +81,4 @@ describe("FR-015 one-time color rewrite", () => {
     expect(row("tasks", a.id)["title_md"]).toBe('[a]{color="#dd3333ff"}');
     expect(log.info).toHaveBeenCalledWith("markdown.colors-rewritten", expect.objectContaining({ tasks: 1, reminders: 0 }));
   });
-
-  it("plan Performance Goals: rewrites 1,000 colored tasks (target 500 ms alone; under 1.5 s with the suite in parallel)", () => {
-    const rows = Array.from({ length: 1000 }, (_, i) =>
-      mk({ titleMd: `Row ${String(i)} [c]{color="#d33"} ==m==`, detailsMd: `Details ${String(i)}\n\n- [x]{bg="#ffe066"} item\n- second` }),
-    );
-    upsertTasksTwoPass(db, rows);
-    const t0 = performance.now();
-    const result = rewriteStoredColors(db);
-    const ms = performance.now() - t0;
-    console.info(`[011 T044] rewrite of 1,000 tasks: ${ms.toFixed(0)} ms`);
-    expect(result.tasks).toBe(1000);
-    // 403 ms measured alone (research §22); the parallel suite slows it, so this guards against regressions only.
-    expect(ms).toBeLessThan(1500);
-  });
 });

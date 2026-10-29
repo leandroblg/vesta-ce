@@ -9,10 +9,11 @@ import { applyChangeSet } from "../../../src/main/db/tasks-repo";
 import { runSearchQuery } from "../../../src/main/search/query";
 import type { SearchQuery } from "../../../src/shared/ipc-contract";
 import { tempDir } from "../db/helpers";
+import { budget } from "../perf-budget";
 import { searchDataSet } from "../db/search-data";
 
 const RUNS = 50;
-const BUDGET_MS = 50;
+const BUDGET_MS = budget(50);
 
 describe("search:query performance (research §5 data set)", () => {
   let db: Database.Database;

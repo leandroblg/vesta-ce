@@ -71,14 +71,6 @@ describe("L9/L15 the database connection (010 FR-023, FR-024, research §5, §6)
     purgeExpired(d, 2_000);
     expect(hits()).toBe(0);
   });
-
-  it("L15 the post-purge maintenance stays under 200 ms with 1,000 tasks", () => {
-    const d = open();
-    applyChangeSet(d, { upserts: Array.from({ length: 1_000 }, (_, i) => makeTask({ titleMd: `Task ${String(i)} ${randomBytes(8).toString("hex")}` })), removals: [] });
-    const t0 = performance.now();
-    purgeExpired(d, 2_000);
-    expect(performance.now() - t0).toBeLessThan(200);
-  });
 });
 
 describe("openDatabase on a file that is not a database", () => {

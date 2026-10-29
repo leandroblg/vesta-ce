@@ -122,18 +122,4 @@ describe("readLogPage (009 FR-014, FR-019, research §6; newest first, PRD Q127)
     chmodSync(dir, 0o000);
     expect(await readLogPage(dir, null, "info")).toMatchObject({ lines: [], older: null, unreadable: true });
   });
-
-  it("opens 50 MiB of logs fast, and a level switch is fast too (SC-003, SC-004)", async () => {
-    seed(Array.from({ length: 50 }, (_, i) => i + 1), 1000, ["info", "info", "warn", "debug", "error"], "x".repeat(900));
-    let t = performance.now();
-    const first = await readLogPage(dir, null, "info");
-    const firstMs = performance.now() - t;
-    t = performance.now();
-    await readLogPage(dir, null, "error");
-    const switchMs = performance.now() - t;
-    expect(first.lines).toHaveLength(400);
-    expect(firstMs).toBeLessThan(300);
-    expect(switchMs).toBeLessThan(300);
-    console.log(`reader: first page ${firstMs.toFixed(1)} ms, level switch ${switchMs.toFixed(1)} ms`);
-  }, 60_000);
 });

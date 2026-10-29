@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { CommandStateInput } from "../../../src/domain/menu/state";
 import { commandState, sameState } from "../../../src/domain/menu/state";
 import { createPublisher } from "../../../src/renderer/menu/publish-state";
+import { budget } from "../perf-budget";
 
 const base: CommandStateInput = {
   view: "tasks",
@@ -82,6 +83,6 @@ describe("013 T021 the command state publisher", () => {
   it("T087 commandState and sameState stay well under 0.5 ms", () => {
     const start = performance.now();
     for (let i = 0; i < 1000; i++) sameState(commandState(base), commandState({ ...base, view: i % 2 === 0 ? "tasks" : "trash" }));
-    expect((performance.now() - start) / 1000).toBeLessThan(0.5);
+    expect((performance.now() - start) / 1000).toBeLessThan(budget(0.5));
   });
 });

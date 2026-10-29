@@ -7,7 +7,8 @@ export default defineConfig({
         test: {
           name: "node",
           include: ["tests/unit/**/*.test.ts"],
-          exclude: ["tests/unit/editor/**"],
+          // The speed checks run on their own: vitest.perf.config.ts.
+          exclude: ["tests/unit/editor/**", "tests/unit/**/*.perf.test.ts"],
           environment: "node",
         },
       },

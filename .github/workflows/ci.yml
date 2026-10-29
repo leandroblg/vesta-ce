@@ -32,6 +32,8 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
+      # The speed checks, one file at a time; on CI each budget is three times the target (tests/unit/perf-budget.ts).
+      - run: npm run test:perf
       - name: End-to-end tests (Linux, virtual display)
         if: runner.os == 'Linux'
         run: xvfb-run -a npm run test:e2e

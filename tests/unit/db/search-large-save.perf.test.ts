@@ -14,10 +14,11 @@ import { buildHandlers, dispatch, type HandlerDeps } from "../../../src/main/ipc
 import { UndoStore } from "../../../src/main/undo-store";
 import { inProcessExtractor } from "../../../src/main/search/extract";
 import { createFill } from "../../../src/main/search/fill";
+import { budget } from "../perf-budget";
 import { makeTask, tempDir } from "./helpers";
 
 const MAX_DETAILS = 1_000_000;
-const BUDGET_MS = 500;
+const BUDGET_MS = budget(500);
 const RUNS = 10;
 
 const BLOCK = [
